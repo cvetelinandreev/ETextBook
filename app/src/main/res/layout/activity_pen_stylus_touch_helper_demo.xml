@@ -2,7 +2,6 @@
 <layout>
 
     <data>
-
         <variable
             name="activityPenStylusTouchHelper"
             type="com.android.onyx.demo.scribble.ScribbleTouchHelperDemoActivity" />

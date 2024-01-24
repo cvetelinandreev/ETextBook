@@ -112,13 +112,13 @@ public class ScribblePenUpRefreshDemoActivity extends AppCompatActivity {
         switch (radioButton.getId()) {
             case R.id.rb_brush:
                 if (checked) {
-                    touchHelper.setStrokeStyle(TouchHelper.STROKE_STYLE_BRUSH);
+                    touchHelper.setStrokeStyle(EpdController.STROKE_STYLE_BRUSH);
                     Log.d(TAG, "STROKE_STYLE_BRUSH");
                 }
                 break;
             case R.id.rb_pencil:
                 if (checked) {
-                    touchHelper.setStrokeStyle(TouchHelper.STROKE_STYLE_PENCIL);
+                    touchHelper.setStrokeStyle(EpdController.STROKE_STYLE_PENCIL);
                     Log.d(TAG, "STROKE_STYLE_PENCIL");
                 }
                 break;

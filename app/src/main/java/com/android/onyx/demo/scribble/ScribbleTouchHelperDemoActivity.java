@@ -136,7 +136,7 @@ public class ScribbleTouchHelperDemoActivity extends AppCompatActivity {
                 touchHelper.setStrokeWidth(STROKE_WIDTH)
                         .setLimitRect(limit, exclude)
                         .openRawDrawing();
-                touchHelper.setStrokeStyle(TouchHelper.STROKE_STYLE_BRUSH);
+                touchHelper.setStrokeStyle(1);
                 binding.rbBrush.setChecked(true);
                 binding.surfaceview.addOnLayoutChangeListener(this);
             }
@@ -189,12 +189,13 @@ public class ScribbleTouchHelperDemoActivity extends AppCompatActivity {
     }
 
     public void onEraserClick() {
-        touchHelper.setRawDrawingEnabled(false);
-        if (bitmap != null) {
-            bitmap.recycle();
-            bitmap = null;
-        }
+//        if (bitmap != null) {
+//            bitmap.recycle();
+//            bitmap = null;
+//        }
         cleanSurfaceView();
+        drawBitmapToSurface();
+        touchHelper.setRawDrawingEnabled(false);
     }
 
     public void onRenderEnableClick() {
@@ -213,13 +214,13 @@ public class ScribbleTouchHelperDemoActivity extends AppCompatActivity {
         switch (radioButton.getId()) {
             case R.id.rb_brush:
                 if (checked) {
-                    touchHelper.setStrokeStyle(TouchHelper.STROKE_STYLE_BRUSH);
+                    touchHelper.setStrokeStyle(EpdController.STROKE_STYLE_BRUSH);
                     Log.d(TAG, "STROKE_STYLE_BRUSH");
                 }
                 break;
             case R.id.rb_pencil:
                 if (checked) {
-                    touchHelper.setStrokeStyle(TouchHelper.STROKE_STYLE_PENCIL);
+                    touchHelper.setStrokeStyle(EpdController.STROKE_STYLE_PENCIL);
                     Log.d(TAG, "STROKE_STYLE_PENCIL");
                 }
                 break;

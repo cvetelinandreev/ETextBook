@@ -6,7 +6,6 @@ import android.support.multidex.MultiDex;
 import android.support.multidex.MultiDexApplication;
 
 import com.onyx.android.sdk.rx.RxManager;
-
 import org.lsposed.hiddenapibypass.HiddenApiBypass;
 
 /**

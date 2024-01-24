@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">OnyxDemo</string>
+    <string name="app_name">Учебник по Математика - 1 част</string>
     <string name="title_activity_environment_demo">EnvironmentDemoActivity</string>
     <string name="set_up_success">set up success</string>
     <string name="set_up_fail">set up fail</string>
