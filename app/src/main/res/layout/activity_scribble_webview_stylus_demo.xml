@@ -7,7 +7,18 @@
         android:layout_height="match_parent"
         tools:context="com.android.onyx.demo.scribble.ScribbleWebViewDemoActivity">
 
+        <WebView
+            android:id="@+id/web_view"
+            android:layout_height="match_parent"
+            android:layout_width="match_parent"
+            android:visibility="invisible" >
+        </WebView>
 
+        <com.android.onyx.demo.scribble.WebViewContainer
+            android:id="@+id/web_view_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+        </com.android.onyx.demo.scribble.WebViewContainer>
 
         <Button
             android:id="@+id/button_pen"

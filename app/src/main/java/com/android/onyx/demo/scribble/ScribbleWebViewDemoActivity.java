@@ -9,6 +9,8 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
@@ -39,9 +41,13 @@ public class ScribbleWebViewDemoActivity extends AppCompatActivity implements Vi
 
     private TouchHelper touchHelper;
     //    private ActivityScribbleWebviewStylusDemoBinding binding;
-    private MyWebView view;
+    private WebView view;
     private Button buttonPen;
+    private Button buttonAddEmptyArea;
+
     private RelativeLayout layout;
+    private WebViewContainer webViewContainer;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,16 +61,34 @@ public class ScribbleWebViewDemoActivity extends AppCompatActivity implements Vi
 
         initWebView();
 
+        view.setVisibility(View.INVISIBLE);
+        webViewContainer = new WebViewContainer(this, view, touchHelper);
+
+        this.layout.addView(webViewContainer, new RelativeLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT));
+
         this.buttonPen = new Button(this);
-        this.buttonPen.setOnClickListener(this);
+        this.buttonPen.setOnClickListener(v -> touchHelper.setRawDrawingEnabled(!touchHelper.isRawDrawingInputEnabled()));
+
+        buttonPen.setId(R.id.button_pen);
+        buttonPen.setText("Pen");
 
         RelativeLayout.LayoutParams relativeParams = new RelativeLayout.LayoutParams(
                 RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
         relativeParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
         relativeParams.addRule(RelativeLayout.ALIGN_PARENT_START);
-        buttonPen.setText("Pen");
-
         layout.addView(buttonPen, relativeParams);
+
+        this.buttonAddEmptyArea = new Button(this);
+        this.buttonAddEmptyArea.setOnClickListener(v -> webViewContainer.switchAddEmptyAreaMode());
+
+        relativeParams = new RelativeLayout.LayoutParams(
+                RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+        relativeParams.addRule(RelativeLayout.ABOVE, R.id.button_pen);
+        buttonAddEmptyArea.setText("+");
+
+        layout.addView(buttonAddEmptyArea, relativeParams);
     }
 
     @Override
@@ -89,11 +113,12 @@ public class ScribbleWebViewDemoActivity extends AppCompatActivity implements Vi
         @Override
         public void onPageFinished(WebView view, String url) {
             super.onPageFinished(view, url);
+            webViewContainer.onPageFinished(view);
         }
     }
 
     private void initWebView() {
-        this.view = new MyWebView(this);
+        this.view = new WebView(this);
 
         EpdController.setWebViewContrastOptimize(this.view, true);
 
@@ -101,21 +126,12 @@ public class ScribbleWebViewDemoActivity extends AppCompatActivity implements Vi
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT));
         touchHelper = TouchHelper.create(this.view, callback);
-        this.view.setWebViewClient(new MyWebViewClient());
-        this.view.getSettings().setJavaScriptEnabled(true);
+        view.setWebViewClient(new MyWebViewClient());
+        view.getSettings().setJavaScriptEnabled(true);
 
-        this.view.loadUrl("file:///android_asset/index.html");
+        view.loadUrl("file:///android_asset/index.html?page=6");
 
-        this.view.post(() -> initTouchHelper());
-
-        this.view.setOnTouchListener((v, event) -> {
-            Log.d(TAG, "surfaceView.setOnTouchListener - onTouch::action - " + event.getAction());
-            boolean res = touchHelper.onTouchEvent(event);
-            if (event.getAction() == MotionEvent.ACTION_MOVE && touchHelper.isRawDrawingInputEnabled()) {
-                return true;
-            }
-            return res;
-        });
+        view.post(this::initTouchHelper);
     }
 
     private void initTouchHelper() {
@@ -143,13 +159,6 @@ public class ScribbleWebViewDemoActivity extends AppCompatActivity implements Vi
 
     @Override
     public void onClick(View v) {
-        if (v.equals(this.buttonPen)) {
-            if (touchHelper.isRawDrawingInputEnabled()) {
-                touchHelper.setRawDrawingEnabled(false);
-            } else {
-                touchHelper.setRawDrawingEnabled(true);
-            }
-        }
 //        else if (v.equals(binding.buttonEraser)) {
 //            touchHelper.setRawDrawingEnabled(false);
 //            binding.surfaceview.reload();
@@ -180,7 +189,7 @@ public class ScribbleWebViewDemoActivity extends AppCompatActivity implements Vi
         @Override
         public void onRawDrawingTouchPointListReceived(TouchPointList touchPointList) {
             Log.d(TAG, "onRawDrawingTouchPointListReceived");
-            view.drawPointsToBitmap(touchPointList.getPoints());
+            webViewContainer.drawPointsToBitmap(touchPointList.getPoints());
         }
 
         @Override

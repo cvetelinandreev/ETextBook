@@ -27,7 +27,7 @@ public class BooxSettingsDemoActivity extends AppCompatActivity {
     }
 
     private void updateData() {
-        isHighContrastEnabled.set(GlobalContrastController.isHighContrastEnabled());
+        //isHighContrastEnabled.set(GlobalContrastController.isHighContrastEnabled());
         supportHighContrast.set(SystemPropertiesUtil.isPhone() || SystemPropertiesUtil.isTablet());
     }
 
@@ -37,7 +37,7 @@ public class BooxSettingsDemoActivity extends AppCompatActivity {
      * Please be careful not to call it directly during the initial lifecycle of the application when using it, as this may cause incorrect results.You can use {@link android.view.View#post(Runnable)} call it.
      */
     public void onHighContrastCheckedChanged(CompoundButton view, boolean isChecked) {
-        GlobalContrastController.setHighContrastEnabled(isChecked);
+        //GlobalContrastController.setHighContrastEnabled(isChecked);
         isHighContrastEnabled.set(isChecked);
     }
 }
