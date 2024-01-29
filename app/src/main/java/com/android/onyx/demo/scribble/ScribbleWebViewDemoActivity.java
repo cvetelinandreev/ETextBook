@@ -1,32 +1,24 @@
 package com.android.onyx.demo.scribble;
 
-import android.content.Context;
-import android.graphics.*;
+import android.graphics.Color;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.WebResourceRequest;
-import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.RelativeLayout;
-import androidx.annotation.NonNull;
-import androidx.databinding.DataBindingUtil;
 import com.android.onyx.demo.utils.TouchUtils;
 import com.onyx.android.demo.R;
-import com.onyx.android.demo.databinding.ActivityScribbleWebviewStylusDemoBinding;
 import com.onyx.android.sdk.api.device.epd.EpdController;
 import com.onyx.android.sdk.data.note.TouchPoint;
-import com.onyx.android.sdk.pen.NeoFountainPen;
 import com.onyx.android.sdk.pen.RawInputCallback;
 import com.onyx.android.sdk.pen.TouchHelper;
 import com.onyx.android.sdk.pen.data.TouchPointList;
-import com.onyx.android.sdk.utils.NumberUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,10 +34,9 @@ public class ScribbleWebViewDemoActivity extends AppCompatActivity implements Vi
     private TouchHelper touchHelper;
     //    private ActivityScribbleWebviewStylusDemoBinding binding;
     private WebView view;
-    private Button buttonPen;
-    private Button buttonAddEmptyArea;
+    private ImageButton buttonPen;
+    private ImageButton buttonAddEmptyArea;
 
-    private RelativeLayout layout;
     private WebViewContainer webViewContainer;
 
     @Override
@@ -56,39 +47,52 @@ public class ScribbleWebViewDemoActivity extends AppCompatActivity implements Vi
 
 //        binding.buttonEraser.setOnClickListener(this);
 
-        layout = new RelativeLayout(this);
+        RelativeLayout layout = new RelativeLayout(this);
         setContentView(layout);
 
         initWebView();
 
-        view.setVisibility(View.INVISIBLE);
-        webViewContainer = new WebViewContainer(this, view, touchHelper);
+        buttonPen = new ImageButton(this);
 
-        this.layout.addView(webViewContainer, new RelativeLayout.LayoutParams(
+        buttonPen.setOnClickListener(v -> {
+            final boolean rawDrawingInputEnabled = touchHelper.isRawDrawingInputEnabled();
+            if (rawDrawingInputEnabled) {
+                touchHelper.setRawDrawingEnabled(false);
+                buttonPen.setImageResource(R.drawable.baseline_edit_24);
+            } else {
+                touchHelper.setRawDrawingEnabled(true);
+                buttonPen.setImageResource(R.drawable.baseline_swipe_vertical_black_24);
+            }
+        });
+
+        buttonPen.setId(R.id.button_pen);
+        buttonPen.setImageResource(R.drawable.baseline_edit_24);
+        buttonPen.setBackgroundResource(R.drawable.outline_circle_24);
+
+        buttonAddEmptyArea = new ImageButton(this);
+        buttonAddEmptyArea.setImageResource(R.drawable.baseline_add_24);
+        buttonAddEmptyArea.setBackgroundResource(R.drawable.outline_circle_24);
+
+        webViewContainer = new WebViewContainer(this, view, touchHelper, buttonPen);
+
+        buttonAddEmptyArea.setOnClickListener(v -> webViewContainer.switchAddEmptyAreaMode());
+
+        layout.addView(this.view, new RelativeLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT));
 
-        this.buttonPen = new Button(this);
-        this.buttonPen.setOnClickListener(v -> touchHelper.setRawDrawingEnabled(!touchHelper.isRawDrawingInputEnabled()));
+        layout.addView(webViewContainer, new RelativeLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT));
 
-        buttonPen.setId(R.id.button_pen);
-        buttonPen.setText("Pen");
+        RelativeLayout.LayoutParams relativeParamsPen = new RelativeLayout.LayoutParams(150, 150);
+        relativeParamsPen.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+        relativeParamsPen.addRule(RelativeLayout.ALIGN_PARENT_START);
+        layout.addView(buttonPen, relativeParamsPen);
 
-        RelativeLayout.LayoutParams relativeParams = new RelativeLayout.LayoutParams(
-                RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-        relativeParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-        relativeParams.addRule(RelativeLayout.ALIGN_PARENT_START);
-        layout.addView(buttonPen, relativeParams);
-
-        this.buttonAddEmptyArea = new Button(this);
-        this.buttonAddEmptyArea.setOnClickListener(v -> webViewContainer.switchAddEmptyAreaMode());
-
-        relativeParams = new RelativeLayout.LayoutParams(
-                RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-        relativeParams.addRule(RelativeLayout.ABOVE, R.id.button_pen);
-        buttonAddEmptyArea.setText("+");
-
-        layout.addView(buttonAddEmptyArea, relativeParams);
+        RelativeLayout.LayoutParams relativeParamsAddEmptyArea = new RelativeLayout.LayoutParams(150, 150);
+        relativeParamsAddEmptyArea.addRule(RelativeLayout.ABOVE, R.id.button_pen);
+        layout.addView(buttonAddEmptyArea, relativeParamsAddEmptyArea);
     }
 
     @Override
@@ -122,26 +126,26 @@ public class ScribbleWebViewDemoActivity extends AppCompatActivity implements Vi
 
         EpdController.setWebViewContrastOptimize(this.view, true);
 
-        this.layout.addView(this.view, new RelativeLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT));
         touchHelper = TouchHelper.create(this.view, callback);
         view.setWebViewClient(new MyWebViewClient());
         view.getSettings().setJavaScriptEnabled(true);
 
-        view.loadUrl("file:///android_asset/index.html?page=6");
+        view.loadUrl("file:///android_asset/index.html?page=32");
 
         view.post(this::initTouchHelper);
+        view.setVisibility(View.INVISIBLE);
     }
 
     private void initTouchHelper() {
         List<Rect> exclude = new ArrayList<>();
         //exclude.add(getRelativeRect(binding.surfaceview, binding.buttonEraser));
         exclude.add(getRelativeRect(this.view, this.buttonPen));
+        exclude.add(getRelativeRect(this.view, this.buttonAddEmptyArea));
         Rect limit = new Rect();
         this.view.getLocalVisibleRect(limit);
         touchHelper.setStrokeWidth(STROKE_WIDTH)
-                   .setLimitRect(limit, exclude);
+                   .setLimitRect(limit, exclude)
+                   .setStrokeColor(Color.BLACK);
         touchHelper.openRawDrawing();
         touchHelper.setStrokeStyle(TouchHelper.STROKE_STYLE_PENCIL);
     }
@@ -166,7 +170,7 @@ public class ScribbleWebViewDemoActivity extends AppCompatActivity implements Vi
 //        }
     }
 
-    private RawInputCallback callback = new RawInputCallback() {
+    private final RawInputCallback callback = new RawInputCallback() {
         @Override
         public void onBeginRawDrawing(boolean b, TouchPoint touchPoint) {
             Log.d(TAG, "onBeginRawDrawing");
@@ -194,12 +198,12 @@ public class ScribbleWebViewDemoActivity extends AppCompatActivity implements Vi
 
         @Override
         public void onBeginRawErasing(boolean b, TouchPoint touchPoint) {
-            Log.d(TAG, "onBeginRawErasing");
+            touchHelper.setRawDrawingRenderEnabled(false);
         }
 
         @Override
         public void onEndRawErasing(boolean b, TouchPoint touchPoint) {
-            Log.d(TAG, "onEndRawErasing");
+            touchHelper.setRawDrawingRenderEnabled(true);
         }
 
         @Override
@@ -209,7 +213,7 @@ public class ScribbleWebViewDemoActivity extends AppCompatActivity implements Vi
 
         @Override
         public void onRawErasingTouchPointListReceived(TouchPointList touchPointList) {
-            Log.d(TAG, "onRawErasingTouchPointListReceived");
+            webViewContainer.deletePaths(touchPointList.getPoints());
         }
     };
 }

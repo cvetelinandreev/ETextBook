@@ -2,54 +2,50 @@ package com.android.onyx.demo.scribble;
 
 import android.content.Context;
 import android.graphics.*;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.webkit.WebView;
+import android.widget.ImageButton;
 import com.onyx.android.sdk.data.note.TouchPoint;
 import com.onyx.android.sdk.pen.TouchHelper;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 import static android.view.accessibility.AccessibilityNodeInfo.ACTION_CLICK;
 
 public class WebViewContainer extends View {
     private final float STROKE_WIDTH = 3.0f;
-    private final TouchHelper touchHelper;
 
     private Point mEmptyAreaStart;
     private Point mEmptyAreaEnd;
     private Canvas webViewCanvas;
     private Bitmap webviewBitmap;
-    private WebView webView;
+    private final WebView webView;
 
     private final Paint strokesPaint = new Paint();
     private final Paint emptyAreaPaint = new Paint();
 
-    private List<EmptyArea> emptyAreas = new ArrayList<EmptyArea>() {{
-//        add(new EmptyArea(3500, 500));
-    }};
+    private final List<EmptyArea> emptyAreas = new ArrayList<>();
     private boolean addEmptyAreaMode = false;
 
-    private class EmptyArea {
-        private int y;
-        private int height;
+    private static class EmptyArea {
+        private final int y;
+        private final int height;
 
-        public int getHeight() {
-            return height;
-        }
-
-        public  EmptyArea(final int y, final int height) {
+        public EmptyArea(final int y, final int height) {
             this.y = y;
             this.height = height;
         }
     }
 
-    public WebViewContainer(final Context context, WebView webView, TouchHelper touchHelper) {
+    public WebViewContainer(final Context context, WebView webView, TouchHelper touchHelper, ImageButton penButton) {
         super(context);
         this.webView = webView;
-        this.touchHelper = touchHelper;
+
+        webView.setOnLongClickListener(v -> true);
+        webView.setLongClickable(false);
 
         setOnTouchListener((v, event) -> {
             if (ACTION_CLICK == event.getAction()) {
@@ -61,27 +57,38 @@ public class WebViewContainer extends View {
             }
 
             if (!addEmptyAreaMode) {
+                // TODO offset if empty area
                 boolean res = webView.onTouchEvent(event);
                 invalidate();
                 return res;
             } else {
+                final Function<Void, Void> runnable = (a) -> {
+                    mEmptyAreaEnd = new Point((int)event.getX(), (int)event.getY());
+
+//                    if (!emptyAreas.isEmpty()) {
+//                        final EmptyArea lastEmptyArea = emptyAreas.get(emptyAreas.size() - 1);
+//
+//                        if (lastEmptyArea.y == mEmptyAreaStart.y + webView.getScrollY()) {
+//                            emptyAreas.remove(lastEmptyArea);
+//                        }
+//                    }
+                    // TODO keep the current empty area in a dedicated variable
+                    emptyAreas.clear();
+                    emptyAreas.add(new EmptyArea(mEmptyAreaStart.y + webView.getScrollY(), mEmptyAreaEnd.y - mEmptyAreaStart.y));
+                    invalidate();
+                    return null;
+                };
                 switch (event.getActionMasked()) {
                     case MotionEvent.ACTION_DOWN:
                         mEmptyAreaStart = new Point((int)event.getX(), (int)event.getY());
                         break;
                     case MotionEvent.ACTION_MOVE:
-                        mEmptyAreaEnd = new Point((int)event.getX(), (int)event.getY());
-                        emptyAreas.clear();
-                        emptyAreas.add(new EmptyArea(mEmptyAreaStart.y + webView.getScrollY(), mEmptyAreaEnd.y - mEmptyAreaStart.y));
-                        invalidate();
+                        runnable.apply(null);
                         break;
                     case MotionEvent.ACTION_UP:
-                        mEmptyAreaEnd = new Point((int)event.getX(), (int)event.getY());
-                        emptyAreas.clear();
-                        emptyAreas.add(new EmptyArea(mEmptyAreaStart.y + webView.getScrollY(), mEmptyAreaEnd.y - mEmptyAreaStart.y));
+                        runnable.apply(null);
                         addEmptyAreaMode = false;
-                        touchHelper.setRawDrawingEnabled(true);
-                        invalidate();
+                        penButton.callOnClick();
                         break;
                     default:
                         super.onTouchEvent(event);
@@ -97,7 +104,6 @@ public class WebViewContainer extends View {
 
         strokesPaint.setAntiAlias(true);
         strokesPaint.setStyle(Paint.Style.STROKE);
-        strokesPaint.setColor(Color.BLACK);
         strokesPaint.setStrokeWidth(STROKE_WIDTH);
     }
 
@@ -153,8 +159,30 @@ public class WebViewContainer extends View {
         }
     }
 
-    private List<Path> paths = new ArrayList<>();
+    private final List<Path> paths = new ArrayList<>();
+
     public void drawPointsToBitmap(final List<TouchPoint> points) {
+        final Path path = createPath(points);
+        paths.add(path);
+        invalidate();
+    }
+
+    public void deletePaths(final List<TouchPoint> points) {
+        final Path eraserPath = createPath(points);
+
+        final Path intersectPath = new Path();
+        final List<Path> pathsToDelete = new ArrayList<>();
+        for (final Path path : paths) {
+            intersectPath.op(path, eraserPath, Path.Op.INTERSECT);
+            if (!intersectPath.isEmpty()) {
+                pathsToDelete.add(path);
+            }
+        }
+
+        paths.removeAll(pathsToDelete);
+    }
+
+    private Path createPath(final List<TouchPoint> points) {
         Path path = new Path();
         PointF prePoint = new PointF(points.get(0).x, points.get(0).y);
         path.moveTo(prePoint.x, prePoint.y);
@@ -164,8 +192,6 @@ public class WebViewContainer extends View {
             prePoint.y = point.y;
         }
         path.offset(0, webView.getScrollY());
-        paths.add(path);
-
-        invalidate();
+        return path;
     }
 }
