@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import com.android.onyx.demo.utils.TouchUtils;
@@ -27,25 +28,23 @@ import java.util.List;
  * Created by seeksky on 2018/4/26.
  */
 
-public class ScribbleWebViewDemoActivity extends AppCompatActivity implements View.OnClickListener {
+public class ScribbleWebViewDemoActivity extends AppCompatActivity {
     private final String TAG = getClass().getSimpleName();
     private final float STROKE_WIDTH = 3.0f;
 
     private TouchHelper touchHelper;
-    //    private ActivityScribbleWebviewStylusDemoBinding binding;
+
     private WebView view;
     private ImageButton buttonPen;
     private ImageButton buttonAddEmptyArea;
 
     private WebViewContainer webViewContainer;
+    private Button buttonSend;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        binding = DataBindingUtil.setContentView(this, R.layout.activity_scribble_webview_stylus_demo);
         getSupportActionBar().hide();
-
-//        binding.buttonEraser.setOnClickListener(this);
 
         RelativeLayout layout = new RelativeLayout(this);
         setContentView(layout);
@@ -93,6 +92,15 @@ public class ScribbleWebViewDemoActivity extends AppCompatActivity implements Vi
         RelativeLayout.LayoutParams relativeParamsAddEmptyArea = new RelativeLayout.LayoutParams(150, 150);
         relativeParamsAddEmptyArea.addRule(RelativeLayout.ABOVE, R.id.button_pen);
         layout.addView(buttonAddEmptyArea, relativeParamsAddEmptyArea);
+
+        buttonSend = new Button(this);
+        buttonSend.setText("Изпрати до учител");
+
+        RelativeLayout.LayoutParams relativeParamsSend = new RelativeLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,  ViewGroup.LayoutParams.WRAP_CONTENT);
+        relativeParamsSend.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+        relativeParamsSend.addRule(RelativeLayout.ALIGN_PARENT_END);
+        layout.addView(buttonSend, relativeParamsSend);
     }
 
     @Override
@@ -141,6 +149,8 @@ public class ScribbleWebViewDemoActivity extends AppCompatActivity implements Vi
         //exclude.add(getRelativeRect(binding.surfaceview, binding.buttonEraser));
         exclude.add(getRelativeRect(this.view, this.buttonPen));
         exclude.add(getRelativeRect(this.view, this.buttonAddEmptyArea));
+        exclude.add(getRelativeRect(this.view, this.buttonSend));
+
         Rect limit = new Rect();
         this.view.getLocalVisibleRect(limit);
         touchHelper.setStrokeWidth(STROKE_WIDTH)
@@ -159,15 +169,6 @@ public class ScribbleWebViewDemoActivity extends AppCompatActivity implements Vi
         childView.getLocalVisibleRect(rect);
         rect.offset(child[0] - parent[0], child[1] - parent[1]);
         return rect;
-    }
-
-    @Override
-    public void onClick(View v) {
-//        else if (v.equals(binding.buttonEraser)) {
-//            touchHelper.setRawDrawingEnabled(false);
-//            binding.surfaceview.reload();
-//            return;
-//        }
     }
 
     private final RawInputCallback callback = new RawInputCallback() {
