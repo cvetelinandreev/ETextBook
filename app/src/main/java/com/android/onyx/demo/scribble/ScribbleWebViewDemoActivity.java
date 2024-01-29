@@ -27,13 +27,12 @@ import java.util.List;
  * Created by seeksky on 2018/4/26.
  */
 
-public class ScribbleWebViewDemoActivity extends AppCompatActivity implements View.OnClickListener {
+public class ScribbleWebViewDemoActivity extends AppCompatActivity {
     private final String TAG = getClass().getSimpleName();
     private final float STROKE_WIDTH = 3.0f;
 
     private TouchHelper touchHelper;
-    //    private ActivityScribbleWebviewStylusDemoBinding binding;
-    private WebView view;
+
     private ImageButton buttonPen;
     private ImageButton buttonAddEmptyArea;
 
@@ -42,15 +41,9 @@ public class ScribbleWebViewDemoActivity extends AppCompatActivity implements Vi
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        binding = DataBindingUtil.setContentView(this, R.layout.activity_scribble_webview_stylus_demo);
         getSupportActionBar().hide();
-
-//        binding.buttonEraser.setOnClickListener(this);
-
         RelativeLayout layout = new RelativeLayout(this);
         setContentView(layout);
-
-        initWebView();
 
         buttonPen = new ImageButton(this);
 
@@ -73,13 +66,9 @@ public class ScribbleWebViewDemoActivity extends AppCompatActivity implements Vi
         buttonAddEmptyArea.setImageResource(R.drawable.baseline_add_24);
         buttonAddEmptyArea.setBackgroundResource(R.drawable.outline_circle_24);
 
-        webViewContainer = new WebViewContainer(this, view, touchHelper, buttonPen);
+        initWebView();
 
         buttonAddEmptyArea.setOnClickListener(v -> webViewContainer.switchAddEmptyAreaMode());
-
-        layout.addView(this.view, new RelativeLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT));
 
         layout.addView(webViewContainer, new RelativeLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -117,32 +106,31 @@ public class ScribbleWebViewDemoActivity extends AppCompatActivity implements Vi
         @Override
         public void onPageFinished(WebView view, String url) {
             super.onPageFinished(view, url);
-            webViewContainer.onPageFinished(view);
         }
     }
 
     private void initWebView() {
-        this.view = new WebView(this);
+        webViewContainer = new WebViewContainer(this);
 
-        EpdController.setWebViewContrastOptimize(this.view, true);
+        EpdController.setWebViewContrastOptimize(webViewContainer, true);
 
-        touchHelper = TouchHelper.create(this.view, callback);
-        view.setWebViewClient(new MyWebViewClient());
-        view.getSettings().setJavaScriptEnabled(true);
+        touchHelper = TouchHelper.create(webViewContainer, callback);
+        webViewContainer.setTouchHelper(touchHelper);
+        webViewContainer.setPenButton(buttonPen);
+        webViewContainer.setWebViewClient(new MyWebViewClient());
+        webViewContainer.getSettings().setJavaScriptEnabled(true);
 
-        view.loadUrl("file:///android_asset/index.html?page=32");
+        webViewContainer.loadUrl("file:///android_asset/index.html");
 
-        view.post(this::initTouchHelper);
-        view.setVisibility(View.INVISIBLE);
+        webViewContainer.post(this::initTouchHelper);
     }
 
     private void initTouchHelper() {
         List<Rect> exclude = new ArrayList<>();
-        //exclude.add(getRelativeRect(binding.surfaceview, binding.buttonEraser));
-        exclude.add(getRelativeRect(this.view, this.buttonPen));
-        exclude.add(getRelativeRect(this.view, this.buttonAddEmptyArea));
+        exclude.add(getRelativeRect(this.webViewContainer, this.buttonPen));
+        exclude.add(getRelativeRect(this.webViewContainer, this.buttonAddEmptyArea));
         Rect limit = new Rect();
-        this.view.getLocalVisibleRect(limit);
+        webViewContainer.getLocalVisibleRect(limit);
         touchHelper.setStrokeWidth(STROKE_WIDTH)
                    .setLimitRect(limit, exclude)
                    .setStrokeColor(Color.BLACK);
@@ -161,38 +149,23 @@ public class ScribbleWebViewDemoActivity extends AppCompatActivity implements Vi
         return rect;
     }
 
-    @Override
-    public void onClick(View v) {
-//        else if (v.equals(binding.buttonEraser)) {
-//            touchHelper.setRawDrawingEnabled(false);
-//            binding.surfaceview.reload();
-//            return;
-//        }
-    }
-
     private final RawInputCallback callback = new RawInputCallback() {
         @Override
         public void onBeginRawDrawing(boolean b, TouchPoint touchPoint) {
-            Log.d(TAG, "onBeginRawDrawing");
-            Log.d(TAG, touchPoint.getX() + ", " + touchPoint.getY());
             TouchUtils.disableFingerTouch(getApplicationContext());
         }
 
         @Override
         public void onEndRawDrawing(boolean b, TouchPoint touchPoint) {
-            Log.d(TAG, "onEndRawDrawing");
             TouchUtils.enableFingerTouch(getApplicationContext());
         }
 
         @Override
         public void onRawDrawingTouchPointMoveReceived(TouchPoint touchPoint) {
-            Log.d(TAG, "onRawDrawingTouchPointMoveReceived");
-            Log.d(TAG, touchPoint.getX() + ", " + touchPoint.getY());
         }
 
         @Override
         public void onRawDrawingTouchPointListReceived(TouchPointList touchPointList) {
-            Log.d(TAG, "onRawDrawingTouchPointListReceived");
             webViewContainer.drawPointsToBitmap(touchPointList.getPoints());
         }
 
