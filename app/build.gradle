@@ -9,7 +9,8 @@ android {
     defaultConfig {
 //        applicationId "com.android.onyx.demo.be.book"
 //        applicationId "com.android.onyx.demo.math.book2"
-        applicationId "com.android.onyx.demo"
+//        applicationId "com.android.onyx.demo"
+        applicationId "com.android.onyx.demo.geogebra"
         minSdkVersion 30
         targetSdkVersion 30
         versionCode 1

@@ -44,59 +44,59 @@ public class WebViewContainer extends View {
         super(context);
         this.webView = webView;
 
-        webView.setOnLongClickListener(v -> true);
-        webView.setLongClickable(false);
-
-        setOnTouchListener((v, event) -> {
-            if (ACTION_CLICK == event.getAction()) {
-                performClick();
-            }
-
-            if (event.getAction() == MotionEvent.ACTION_MOVE && touchHelper.isRawDrawingInputEnabled()) {
-                return true;
-            }
-
-            if (!addEmptyAreaMode) {
-                // TODO offset if empty area
-                boolean res = webView.onTouchEvent(event);
-                invalidate();
-                return res;
-            } else {
-                final Function<Void, Void> runnable = (a) -> {
-                    mEmptyAreaEnd = new Point((int)event.getX(), (int)event.getY());
-
-//                    if (!emptyAreas.isEmpty()) {
-//                        final EmptyArea lastEmptyArea = emptyAreas.get(emptyAreas.size() - 1);
+//        webView.setOnLongClickListener(v -> true);
+//        webView.setLongClickable(false);
 //
-//                        if (lastEmptyArea.y == mEmptyAreaStart.y + webView.getScrollY()) {
-//                            emptyAreas.remove(lastEmptyArea);
-//                        }
-//                    }
-                    // TODO keep the current empty area in a dedicated variable
-                    emptyAreas.clear();
-                    emptyAreas.add(new EmptyArea(mEmptyAreaStart.y + webView.getScrollY(), mEmptyAreaEnd.y - mEmptyAreaStart.y));
-                    invalidate();
-                    return null;
-                };
-                switch (event.getActionMasked()) {
-                    case MotionEvent.ACTION_DOWN:
-                        mEmptyAreaStart = new Point((int)event.getX(), (int)event.getY());
-                        break;
-                    case MotionEvent.ACTION_MOVE:
-                        runnable.apply(null);
-                        break;
-                    case MotionEvent.ACTION_UP:
-                        runnable.apply(null);
-                        addEmptyAreaMode = false;
-                        penButton.callOnClick();
-                        break;
-                    default:
-                        super.onTouchEvent(event);
-                        break;
-                }
-                return true;
-            }
-        });
+//        setOnTouchListener((v, event) -> {
+//            if (ACTION_CLICK == event.getAction()) {
+//                performClick();
+//            }
+//
+//            if (event.getAction() == MotionEvent.ACTION_MOVE && touchHelper.isRawDrawingInputEnabled()) {
+//                return true;
+//            }
+//
+//            if (!addEmptyAreaMode) {
+//                // TODO offset if empty area
+//                boolean res = webView.onTouchEvent(event);
+//                invalidate();
+//                return res;
+//            } else {
+//                final Function<Void, Void> runnable = (a) -> {
+//                    mEmptyAreaEnd = new Point((int)event.getX(), (int)event.getY());
+//
+////                    if (!emptyAreas.isEmpty()) {
+////                        final EmptyArea lastEmptyArea = emptyAreas.get(emptyAreas.size() - 1);
+////
+////                        if (lastEmptyArea.y == mEmptyAreaStart.y + webView.getScrollY()) {
+////                            emptyAreas.remove(lastEmptyArea);
+////                        }
+////                    }
+//                    // TODO keep the current empty area in a dedicated variable
+//                    emptyAreas.clear();
+//                    emptyAreas.add(new EmptyArea(mEmptyAreaStart.y + webView.getScrollY(), mEmptyAreaEnd.y - mEmptyAreaStart.y));
+//                    invalidate();
+//                    return null;
+//                };
+//                switch (event.getActionMasked()) {
+//                    case MotionEvent.ACTION_DOWN:
+//                        mEmptyAreaStart = new Point((int)event.getX(), (int)event.getY());
+//                        break;
+//                    case MotionEvent.ACTION_MOVE:
+//                        runnable.apply(null);
+//                        break;
+//                    case MotionEvent.ACTION_UP:
+//                        runnable.apply(null);
+//                        addEmptyAreaMode = false;
+//                        penButton.callOnClick();
+//                        break;
+//                    default:
+//                        super.onTouchEvent(event);
+//                        break;
+//                }
+//                return true;
+//            }
+//        });
 
         emptyAreaPaint.setStyle(Paint.Style.STROKE);
         emptyAreaPaint.setColor(Color.YELLOW);

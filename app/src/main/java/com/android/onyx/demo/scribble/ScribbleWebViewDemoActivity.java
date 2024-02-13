@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
@@ -77,13 +78,34 @@ public class ScribbleWebViewDemoActivity extends AppCompatActivity {
 
         buttonAddEmptyArea.setOnClickListener(v -> webViewContainer.switchAddEmptyAreaMode());
 
-        layout.addView(this.view, new RelativeLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT));
 
-        layout.addView(webViewContainer, new RelativeLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT));
+
+        WebView textbook = new WebView(this);
+        textbook.setId("textbook".hashCode());
+        textbook.setWebViewClient(new MyWebViewClient1());
+        textbook.getSettings().setJavaScriptEnabled(true);
+        textbook.getSettings().setDomStorageEnabled(true);
+
+        textbook.loadUrl("file:///android_asset/math-prosveta/index.html#076");
+
+        textbook.setOnTouchListener((v, event) -> (event.getAction() == MotionEvent.ACTION_MOVE));
+
+        layout.addView(textbook, new RelativeLayout.LayoutParams(
+                RelativeLayout.LayoutParams.MATCH_PARENT,
+                RelativeLayout.LayoutParams.MATCH_PARENT));
+
+        final RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
+                1660,
+                1000);
+        params.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+        params.addRule(RelativeLayout.ALIGN_PARENT_END);
+        layout.addView(this.view, params);
+//        view.setOnTouchListener((v, event) -> (event.getAction() == MotionEvent.ACTION_MOVE));
+
+
+//        layout.addView(webViewContainer, new RelativeLayout.LayoutParams(
+//                ViewGroup.LayoutParams.MATCH_PARENT,
+//                ViewGroup.LayoutParams.MATCH_PARENT));
 
         RelativeLayout.LayoutParams relativeParamsPen = new RelativeLayout.LayoutParams(150, 150);
         relativeParamsPen.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
@@ -95,7 +117,7 @@ public class ScribbleWebViewDemoActivity extends AppCompatActivity {
         layout.addView(buttonAddEmptyArea, relativeParamsAddEmptyArea);
 
         buttonSend = new Button(this);
-        buttonSend.setText("Изпрати до учител");
+        buttonSend.setText("Изпрати до ученици");
 
         RelativeLayout.LayoutParams relativeParamsSend = new RelativeLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,  ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -127,6 +149,14 @@ public class ScribbleWebViewDemoActivity extends AppCompatActivity {
         public void onPageFinished(WebView view, String url) {
             super.onPageFinished(view, url);
             webViewContainer.onPageFinished(view);
+//            view.scrollTo(0, 245);
+        }
+    }
+
+    private class MyWebViewClient1 extends WebViewClient {
+        @Override
+        public void onPageFinished(WebView v, String url) {
+            super.onPageFinished(v, url);
         }
     }
 
@@ -138,12 +168,14 @@ public class ScribbleWebViewDemoActivity extends AppCompatActivity {
         touchHelper = TouchHelper.create(this.view, callback);
         view.setWebViewClient(new MyWebViewClient());
         view.getSettings().setJavaScriptEnabled(true);
+        view.getSettings().setDomStorageEnabled(true);
 
-        view.loadUrl("file:///android_asset/math/index.html?page=32");
+//        view.loadUrl("file:///android_asset/math/index.html?page=32");
 //        view.loadUrl("file:///android_asset/be/index.html#090");
+        view.loadUrl("file:///android_asset/geogebra/symmetry.html");
 
         view.post(this::initTouchHelper);
-        view.setVisibility(View.INVISIBLE);
+//        view.setVisibility(View.INVISIBLE);
     }
 
     private void initTouchHelper() {
