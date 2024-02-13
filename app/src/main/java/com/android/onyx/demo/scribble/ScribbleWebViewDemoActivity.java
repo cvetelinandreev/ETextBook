@@ -1,6 +1,7 @@
 package com.android.onyx.demo.scribble;
 
 import android.graphics.Color;
+
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -105,13 +106,13 @@ public class ScribbleWebViewDemoActivity extends AppCompatActivity {
 
     @Override
     protected void onResume() {
-        touchHelper.setRawDrawingEnabled(true);
         super.onResume();
     }
 
     @Override
     protected void onPause() {
         touchHelper.setRawDrawingEnabled(false);
+        buttonPen.setImageResource(R.drawable.baseline_edit_24);
         super.onPause();
     }
 
@@ -138,7 +139,8 @@ public class ScribbleWebViewDemoActivity extends AppCompatActivity {
         view.setWebViewClient(new MyWebViewClient());
         view.getSettings().setJavaScriptEnabled(true);
 
-        view.loadUrl("file:///android_asset/index.html?page=32");
+        view.loadUrl("file:///android_asset/math/index.html?page=32");
+//        view.loadUrl("file:///android_asset/be/index.html#090");
 
         view.post(this::initTouchHelper);
         view.setVisibility(View.INVISIBLE);

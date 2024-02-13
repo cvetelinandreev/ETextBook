@@ -28,7 +28,7 @@ public class WebViewContainer extends View {
     private final Paint emptyAreaPaint = new Paint();
 
     private final List<EmptyArea> emptyAreas = new ArrayList<>();
-    private boolean addEmptyAreaMode = false;
+    boolean addEmptyAreaMode = false;
 
     private static class EmptyArea {
         private final int y;
