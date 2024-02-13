@@ -141,6 +141,7 @@ public class ScribbleWebViewDemoActivity extends AppCompatActivity {
 
         view.loadUrl("file:///android_asset/math/index.html?page=32");
 //        view.loadUrl("file:///android_asset/be/index.html#090");
+        view.loadUrl("file:///android_asset/math-prosveta/index.html#076");
 
         view.post(this::initTouchHelper);
         view.setVisibility(View.INVISIBLE);
