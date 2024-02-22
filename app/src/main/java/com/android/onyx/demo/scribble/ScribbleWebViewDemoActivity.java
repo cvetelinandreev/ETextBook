@@ -76,7 +76,7 @@ public class ScribbleWebViewDemoActivity extends AppCompatActivity {
 
         webViewContainer = new WebViewContainer(this, view, touchHelper, buttonPen);
 
-        buttonAddEmptyArea.setOnClickListener(v -> webViewContainer.switchAddEmptyAreaMode());
+        buttonAddEmptyArea.setOnClickListener(v -> view.setVisibility(View.VISIBLE));
 
 
 
@@ -175,7 +175,7 @@ public class ScribbleWebViewDemoActivity extends AppCompatActivity {
         view.loadUrl("file:///android_asset/geogebra/symmetry.html");
 
         view.post(this::initTouchHelper);
-//        view.setVisibility(View.INVISIBLE);
+        view.setVisibility(View.INVISIBLE);
     }
 
     private void initTouchHelper() {
